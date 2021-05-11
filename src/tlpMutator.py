@@ -123,6 +123,6 @@ class TlpMutator():
 
         
 
-tlp_mutator = TlpMutator("feup.net.xml")
+tlp_mutator = TlpMutator("input/feup.net.xml")
 tlp_mutator.generate_mutated_XML(4)
 tlp_mutator.storePlainXML()

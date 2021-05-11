@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 05/11/21 15:10:11 by Eclipse SUMO netconvert Version 1.8.0
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+
+    <input>
+        <sumo-net-file value="network.net.xml"/>
+    </input>
+
+    <output>
+        <plain-output-prefix value="true"/>
+    </output>
+
+    <processing>
+        <geometry.min-radius.fix.railways value="false"/>
+        <geometry.max-grade.fix value="false"/>
+        <offset.disable-normalization value="true"/>
+        <lefthand value="false"/>
+    </processing>
+
+    <junctions>
+        <no-turnarounds value="true"/>
+        <junctions.corner-detail value="0"/>
+        <junctions.limit-turn-speed value="-1"/>
+        <rectangular-lane-cut value="false"/>
+    </junctions>
+
+    <pedestrian>
+        <walkingareas value="false"/>
+    </pedestrian>
+
+    <report>
+        <aggregate-warnings value="5"/>
+    </report>
+
+</configuration>
+-->
+
+<connections version="1.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/connections_file.xsd">
+    <connection from="leftBottom_to_leftTop" to="leftTop_to_middleTop" fromLane="0" toLane="0"/>
+
+    <connection from="leftBottom_to_middleBottom" to="middleBottom_to_rightBottom" fromLane="0" toLane="0"/>
+    <connection from="leftBottom_to_middleBottom" to="middleBottom_to_middleTop" fromLane="0" toLane="0"/>
+
+    <connection from="leftTop_to_leftBottom" to="leftBottom_to_middleBottom" fromLane="0" toLane="0"/>
+
+    <connection from="leftTop_to_middleTop" to="middleTop_to_middleBottom" fromLane="0" toLane="0"/>
+    <connection from="leftTop_to_middleTop" to="middleTop_to_rightTop" fromLane="0" toLane="0"/>
+
+    <connection from="middleBottom_to_leftBottom" to="leftBottom_to_leftTop" fromLane="0" toLane="0"/>
+
+    <connection from="middleBottom_to_middleTop" to="middleTop_to_rightTop" fromLane="0" toLane="0"/>
+    <connection from="middleBottom_to_middleTop" to="middleTop_to_leftTop" fromLane="0" toLane="0"/>
+
+    <connection from="middleBottom_to_rightBottom" to="rightBottom_to_rightTop" fromLane="0" toLane="0"/>
+
+    <connection from="middleTop_to_leftTop" to="leftTop_to_leftBottom" fromLane="0" toLane="0"/>
+
+    <connection from="middleTop_to_middleBottom" to="middleBottom_to_leftBottom" fromLane="0" toLane="0"/>
+    <connection from="middleTop_to_middleBottom" to="middleBottom_to_rightBottom" fromLane="0" toLane="0"/>
+
+    <connection from="middleTop_to_rightTop" to="rightTop_to_rightBottom" fromLane="0" toLane="0"/>
+
+    <connection from="rightBottom_to_middleBottom" to="middleBottom_to_middleTop" fromLane="0" toLane="0"/>
+    <connection from="rightBottom_to_middleBottom" to="middleBottom_to_leftBottom" fromLane="0" toLane="0"/>
+
+    <connection from="rightBottom_to_rightTop" to="rightTop_to_middleTop" fromLane="0" toLane="0"/>
+
+    <connection from="rightTop_to_middleTop" to="middleTop_to_leftTop" fromLane="0" toLane="0"/>
+    <connection from="rightTop_to_middleTop" to="middleTop_to_middleBottom" fromLane="0" toLane="0"/>
+
+    <connection from="rightTop_to_rightBottom" to="rightBottom_to_middleBottom" fromLane="0" toLane="0"/>
+
+</connections>

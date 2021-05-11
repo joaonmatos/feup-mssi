@@ -8,7 +8,7 @@ else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 
 sumoBinary = "C:/Program Files (x86)/Eclipse/Sumo/bin/sumo-gui"
-sumoConfig = ["-c", "network.sumocfg", "-S"]
+sumoConfig = ["-c", "input/network.sumocfg", "-S"]
 
 sumoCmd = [sumoBinary, sumoConfig[0], sumoConfig[1], sumoConfig[2]]
 
@@ -62,10 +62,6 @@ class StateListener(traci.StepListener):
                     self.emergencyBreak = True
 
 
-# TESTING FOR MSSI
-from tlpMutator import TlpMutator
-tlp_mutator = TlpMutator("network.net.xml")
-tlp_mutator.generate_mutated_XML(1)
 
 
 # MAIN PROGRAM
