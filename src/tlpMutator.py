@@ -3,7 +3,7 @@ import subprocess
 import math
 import itertools
 
-DEBUG = False
+DEBUG = True
 
 class TlpMutator():
 
@@ -12,7 +12,7 @@ class TlpMutator():
     
     def storePlainXML(self):
         subprocess.run(["netconvert", "--node-files=true.nod.xml", "--edge-files=true.edg.xml",
-         "--connection-files=true.con.xml","--tllogic-files=true.tll.xml", "--type-files=true.typ.xml"])    
+         "--connection-files=true.con.xml","--tllogic-files=true.tll.xml", "--type-files=true.typ.xml", "--plain.extend-edge-shape"])    
 
     def __init__(self, net_xml_filename):
         
@@ -108,8 +108,9 @@ class TlpMutator():
                 xml_elem_node.set("x", str(x_offset + self.min_x))
                 xml_elem_node.set("y", str(y_offset + self.min_y))
                 xml_elem_node.set("type", "priority")
+                xml_elem_node.set("keepClear", "false")
                 
-                self.added_nodes.append(node_name)
+                self.added_nodes.append({"id" : node_name, "x" : xml_elem_node.get("x"), "y" : xml_elem_node.get("y")})
 
                 #Add edge
 
@@ -123,11 +124,12 @@ class TlpMutator():
                 xml_elem_edge.set("speed", "13.89")
                 xml_elem_edge.set("allow", "custom1")
 
-        #Disjoining nodes
-        #<joinExclude nodes=""/>
-        xml_elem_joinExculde = ET.SubElement(self.node_xml_root, 'joinExclude')
-        separator = " "
-        xml_elem_joinExculde.set("nodes", separator.join(self.added_nodes))                
+        #[Deprecated]
+        # #Disjoining nodes
+        # #<joinExclude nodes=""/>
+        # xml_elem_joinExculde = ET.SubElement(self.node_xml_root, 'joinExclude')
+        # separator = " "
+        # xml_elem_joinExculde.set("nodes", separator.join(self.added_nodes))                
                 
         #Adding flight edges
         self.add_flight_edges()
@@ -141,15 +143,30 @@ class TlpMutator():
 
     def add_flight_edges(self):
         for pair in itertools.combinations(self.added_nodes, 2):
-            log("adding flight edg " + pair[0] + " " + pair[1])
+            node0_id = pair[0].get('id')
+            node1_id = pair[1].get('id')
+            log("adding flight edg " + node0_id + " " + node1_id)
             xml_elem_edge = ET.SubElement(self.edg_xml_root, 'edge')
-            xml_elem_edge.set("id", "TLP_to_TLP_edge_" + str(pair[0]) + "_" + str(pair[1]))
-            xml_elem_edge.set("from", pair[0])
-            xml_elem_edge.set("to", pair[1])
+            xml_elem_edge.set("id", "TLP_to_TLP_edge_" + str(node0_id) + "_" + str(node1_id))
+            #xml_elem_edge.set("type", "airlane")
+            xml_elem_edge.set("from", node0_id)
+            xml_elem_edge.set("to", node1_id)
             xml_elem_edge.set("priority", "1")
             xml_elem_edge.set("numLanes", "1")
-            xml_elem_edge.set("speed", "13.89")
-            xml_elem_edge.set("allow", "custom1")
+            xml_elem_edge.set("speed", "1000.89")
+            xml_elem_edge.set("allow", "custom1") # is custom 1 the best option or de we create a vehicle type?
+            
+            #shape calculation
+            node0_x = float(pair[0].get('x'))
+            node1_x = float(pair[1].get('x'))
+            node0_y = float(pair[0].get('y'))
+            node1_y = float(pair[1].get('y'))
+
+            mid_x = (node0_x + node1_x)/2
+            mid_y = (node0_y + node1_y)/2
+            shape_str = str(mid_x) + "," + str(mid_y) + ",300"
+            log(shape_str)
+            xml_elem_edge.set("shape",shape_str)  
 
 def log(s):
     if DEBUG:
@@ -158,3 +175,8 @@ def log(s):
 tlp_mutator = TlpMutator("input/feup.net.xml")
 tlp_mutator.generate_mutated_XML(4)
 tlp_mutator.storePlainXML()
+
+# #TODO: Add to typ file
+# <types>
+#     <type id="airlane" priority="13" numLanes="10" speed="160" />
+# </types>
