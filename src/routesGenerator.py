@@ -9,7 +9,7 @@ class RoutesGenerator:
     
     def generate_trips(self):
         #randomTrips.main(randomTrips.get_options(["-n " + self.original_net_xml_filename,"-e 50", "--vehicle-class UAMS", "--trip-attributes=\"maxSpeed=\\\"27.8\\\""]))
-        randomTrips.main(randomTrips.get_options(["-n", self.original_net_xml_filename,"-e", "50"]))
+        randomTrips.main(randomTrips.get_options(["-n", self.original_net_xml_filename,"-e", "10000", "-p", "20", "-o", "output/trips.trips.xml"]))
         # subprocess.run(["randomTrips.py", "--sumo-net-file",  filename ,"--plain-output-prefix"])    
 
     def generate_route_files(self):

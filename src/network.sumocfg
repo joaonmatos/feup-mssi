@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <input>
+    <net-file value="output/net.net.xml"/>
+    <route-files value="output/tlp.rou.xml"/>
+  </input>
+  <time>
+    <begin value="0"/>
+    <end value="1000"/>
+  </time>
+  <processing>
+    <collision.check-junctions value="true" />
+  </processing>
+</configuration>
