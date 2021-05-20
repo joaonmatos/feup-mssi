@@ -162,9 +162,9 @@ class TlpMutator():
             node0_y = float(pair[0].get('y'))
             node1_y = float(pair[1].get('y'))
 
-            mid_x = (node0_x + node1_x)/2
-            mid_y = (node0_y + node1_y)/2
-            shape_str = str(mid_x) + "," + str(mid_y) + ",300"
+            third_x = (node0_x + node1_x)/2
+            third_y = (node0_y + node1_y)/2
+            shape_str = str(third_x) + "," + str(third_y) + ",300"
             log(shape_str)
             xml_elem_edge.set("shape",shape_str)  
 
@@ -172,6 +172,7 @@ def log(s):
     if DEBUG:
         print(s)
 
+#tlp_mutator = TlpMutator("input/feup.net.xml")
 tlp_mutator = TlpMutator("input/feup.net.xml")
 tlp_mutator.generate_mutated_XML(4)
 tlp_mutator.storePlainXML()
