@@ -1,3 +1,4 @@
+from random import random
 import xml.etree.ElementTree as ET
 import subprocess
 import randomTrips
@@ -12,7 +13,7 @@ class RoutesGenerator:
     def generate_trips(self):
         #randomTrips.main(randomTrips.get_options(["-n " + self.original_net_xml_filename,"-e 50", "--vehicle-class UAMS", "--trip-attributes=\"maxSpeed=\\\"27.8\\\""]))
         randomTrips.main(randomTrips.get_options(
-            ["-n", self.original_net_xml_filename, "-e", "10000", "-p", "20", "-o", "output/trips.trips.xml"]))
+            ["-n", self.original_net_xml_filename, "-e", "10000", "-p", "1", "-o", "output/trips.trips.xml"]))
         # subprocess.run(["randomTrips.py", "--sumo-net-file",  filename ,"--plain-output-prefix"])
 
     def generate_route_files(self):
@@ -41,11 +42,12 @@ class RoutesGenerator:
         self.trips_xml_root.insert(0, trips_routes_node)
 
         #Adding x ratio of costume1 trips
-        x = 0.1
+        x = 0.90
 
         trips = self.trips_xml_root.findall("trip")
-        for i in range(int(round(len(trips)*x))):
-            trips[i].set("type", "costume1")
+        for i in range(len(trips)):
+            if random() < x:
+                trips[i].set("type", "costume1")
  
         #Save Trips
         self.trips_xml_tree.write("output/trips_UAMS.trips.xml")

@@ -2,18 +2,25 @@ import xml.etree.ElementTree as ET
 import subprocess
 import math
 import itertools
+import shutil
 
 DEBUG = True
 
 class TlpMutator():
 
     def getPlainXML(self, filename):
-        subprocess.run(["netconvert", "--sumo-net-file",  filename ,"--plain-output-prefix"])    
+        subprocess.run(["netconvert", "--sumo-net-file",  filename ,"--plain-output-prefix"])
     
     def storePlainXML(self):
         subprocess.run(["netconvert", "--node-files=true.nod.xml", "--edge-files=true.edg.xml",
          "--connection-files=true.con.xml","--tllogic-files=true.tll.xml", "--type-files=true.typ.xml", "--plain.extend-edge-shape"])    
-
+        shutil.move("net.net.xml", "output/net.net.xml")
+        shutil.move("true.con.xml", "output/true.con.xml")
+        shutil.move("true.edg.xml", "output/true.edg.xml")
+        shutil.move("true.nod.xml", "output/true.nod.xml")
+        shutil.move("true.tll.xml", "output/true.ttl.xml")
+        shutil.move("true.typ.xml", "output/true.typ.xml")   
+    
     def __init__(self, net_xml_filename):
         
         #Separate net.xml
@@ -116,13 +123,21 @@ class TlpMutator():
 
                 closest_node = self.get_closest_node(x_offset + self.min_x, y_offset + self.min_y)
                 xml_elem_edge = ET.SubElement(self.edg_xml_root, 'edge')
-                xml_elem_edge.set("id", "TLP_to_net_edge_" + str(i) + "_" + str(j))
+                xml_elem_edge.set("id", "TLP_to_net_edge_" + str(i) + "_" + str(j) + "_from")
                 xml_elem_edge.set("from", node_name)
                 xml_elem_edge.set("to", closest_node)
                 xml_elem_edge.set("priority", "1")
                 xml_elem_edge.set("numLanes", "1")
                 xml_elem_edge.set("speed", "13.89")
-                xml_elem_edge.set("allow", "custom1")
+                xml_elem_edge.set("allow", "bus")
+                xml_elem_edge = ET.SubElement(self.edg_xml_root, 'edge')
+                xml_elem_edge.set("id", "TLP_to_net_edge_" + str(i) + "_" + str(j) + "_to")
+                xml_elem_edge.set("from", closest_node)
+                xml_elem_edge.set("to", node_name)
+                xml_elem_edge.set("priority", "1")
+                xml_elem_edge.set("numLanes", "1")
+                xml_elem_edge.set("speed", "13.89")
+                xml_elem_edge.set("allow", "bus")
 
         #[Deprecated]
         # #Disjoining nodes
@@ -147,14 +162,14 @@ class TlpMutator():
             node1_id = pair[1].get('id')
             log("adding flight edg " + node0_id + " " + node1_id)
             xml_elem_edge = ET.SubElement(self.edg_xml_root, 'edge')
-            xml_elem_edge.set("id", "TLP_to_TLP_edge_" + str(node0_id) + "_" + str(node1_id))
+            xml_elem_edge.set("id", "TLP_to_TLP_edge_" + str(node0_id) + "_" + str(node1_id) + "_" + "1")
             #xml_elem_edge.set("type", "airlane")
             xml_elem_edge.set("from", node0_id)
             xml_elem_edge.set("to", node1_id)
             xml_elem_edge.set("priority", "1")
             xml_elem_edge.set("numLanes", "1")
             xml_elem_edge.set("speed", "1000.89")
-            xml_elem_edge.set("allow", "custom1") # is custom 1 the best option or de we create a vehicle type?
+            xml_elem_edge.set("allow", "bus") # is custom 1 the best option or de we create a vehicle type?
             
             #shape calculation
             node0_x = float(pair[0].get('x'))
@@ -162,11 +177,38 @@ class TlpMutator():
             node0_y = float(pair[0].get('y'))
             node1_y = float(pair[1].get('y'))
 
-            third_x = (node0_x + node1_x)/2
-            third_y = (node0_y + node1_y)/2
-            shape_str = str(third_x) + "," + str(third_y) + ",300"
+            half_x = (node0_x + node1_x)/2
+            half_y = (node0_y + node1_y)/2
+            shape_str = str(half_x) + "," + str(half_y) + ",200"
             log(shape_str)
-            xml_elem_edge.set("shape",shape_str)  
+            xml_elem_edge.set("shape",shape_str)
+
+
+            #Second edge
+            log("adding flight edg " + node1_id + " " + node0_id)
+            xml_elem_edge_2 = ET.SubElement(self.edg_xml_root, 'edge')
+            xml_elem_edge_2.set("id", "TLP_to_TLP_edge_" + str(node0_id) + "_" + str(node1_id) + "_" + "2")
+            #xml_elem_edge.set("type", "airlane")
+            xml_elem_edge_2.set("from", node1_id)
+            xml_elem_edge_2.set("to", node0_id)
+            xml_elem_edge_2.set("priority", "1")
+            xml_elem_edge_2.set("numLanes", "1")
+            xml_elem_edge_2.set("speed", "1000.89")
+            xml_elem_edge_2.set("allow", "bus") # is custom 1 the best option or de we create a vehicle type?
+            
+            #shape calculation
+            node0_x = float(pair[0].get('x'))
+            node1_x = float(pair[1].get('x'))
+            node0_y = float(pair[0].get('y'))
+            node1_y = float(pair[1].get('y'))
+
+            half_x = (node0_x + node1_x)/2
+            half_y = (node0_y + node1_y)/2
+            shape_str = str(half_x) + "," + str(half_y) + ",200"
+            log(shape_str)
+            xml_elem_edge_2.set("shape",shape_str)
+
+            
 
 def log(s):
     if DEBUG:
