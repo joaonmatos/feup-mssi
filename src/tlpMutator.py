@@ -3,6 +3,7 @@ import subprocess
 import math
 import itertools
 import shutil
+import time
 
 DEBUG = True
 
@@ -14,6 +15,8 @@ class TlpMutator():
     def storePlainXML(self):
         subprocess.run(["netconvert", "--node-files=true.nod.xml", "--edge-files=true.edg.xml",
          "--connection-files=true.con.xml","--tllogic-files=true.tll.xml", "--type-files=true.typ.xml", "--plain.extend-edge-shape"])    
+        
+        time.sleep(2)
         shutil.move("net.net.xml", "output/net.net.xml")
         shutil.move("true.con.xml", "output/true.con.xml")
         shutil.move("true.edg.xml", "output/true.edg.xml")
@@ -129,7 +132,7 @@ class TlpMutator():
                 xml_elem_edge.set("priority", "1")
                 xml_elem_edge.set("numLanes", "1")
                 xml_elem_edge.set("speed", "13.89")
-                xml_elem_edge.set("allow", "bus")
+                xml_elem_edge.set("allow", "custom1")
                 xml_elem_edge = ET.SubElement(self.edg_xml_root, 'edge')
                 xml_elem_edge.set("id", "TLP_to_net_edge_" + str(i) + "_" + str(j) + "_to")
                 xml_elem_edge.set("from", closest_node)
@@ -137,7 +140,7 @@ class TlpMutator():
                 xml_elem_edge.set("priority", "1")
                 xml_elem_edge.set("numLanes", "1")
                 xml_elem_edge.set("speed", "13.89")
-                xml_elem_edge.set("allow", "bus")
+                xml_elem_edge.set("allow", "custom1")
 
         #[Deprecated]
         # #Disjoining nodes
@@ -168,8 +171,8 @@ class TlpMutator():
             xml_elem_edge.set("to", node1_id)
             xml_elem_edge.set("priority", "1")
             xml_elem_edge.set("numLanes", "1")
-            xml_elem_edge.set("speed", "1000.89")
-            xml_elem_edge.set("allow", "bus") # is custom 1 the best option or de we create a vehicle type?
+            xml_elem_edge.set("speed", "75.00")
+            xml_elem_edge.set("allow", "custom1") # is custom 1 the best option or de we create a vehicle type?
             
             #shape calculation
             node0_x = float(pair[0].get('x'))
@@ -194,7 +197,7 @@ class TlpMutator():
             xml_elem_edge_2.set("priority", "1")
             xml_elem_edge_2.set("numLanes", "1")
             xml_elem_edge_2.set("speed", "1000.89")
-            xml_elem_edge_2.set("allow", "bus") # is custom 1 the best option or de we create a vehicle type?
+            xml_elem_edge_2.set("allow", "custom1") # is custom 1 the best option or de we create a vehicle type?
             
             #shape calculation
             node0_x = float(pair[0].get('x'))

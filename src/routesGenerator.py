@@ -37,8 +37,9 @@ class RoutesGenerator:
         
         #<vType id="custom1" vClass="custom1"/>
         trips_routes_node = ET.Element('vType')
-        trips_routes_node.set("id", "costume1")
-        trips_routes_node.set("vClass", "bus")
+        trips_routes_node.set("id", "UAMS")
+        trips_routes_node.set("vClass", "custom1")
+        trips_routes_node.set("maxSpeed", "75")
         self.trips_xml_root.insert(0, trips_routes_node)
 
         #Adding x ratio of costume1 trips
@@ -47,7 +48,7 @@ class RoutesGenerator:
         trips = self.trips_xml_root.findall("trip")
         for i in range(len(trips)):
             if random() < x:
-                trips[i].set("type", "costume1")
+                trips[i].set("type", "UAMS")
  
         #Save Trips
         self.trips_xml_tree.write("output/trips_UAMS.trips.xml")
@@ -57,7 +58,7 @@ class RoutesGenerator:
     def create_UAMS_vType(self, filename):
         f = open("output/" + filename, "w+")
         f.write("<additional>")
-        f.write("  <vType id=\"myType\" maxSpeed=\"27\" vClass=\"passenger\"/>")
+        f.write("  <vType id=\"UAMS\" maxSpeed=\"27\" vClass=\"custom1\"/>")
         f.write("</additional>")
 
         f.write("<additional>")
