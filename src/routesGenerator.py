@@ -18,16 +18,12 @@ class RoutesGenerator:
 
     def generate_route_files(self):
         subprocess.run(["duarouter", "-n", self.original_net_xml_filename, "--route-files",
-                       "output/trips.trips.xml", "-o", "output/original.rou.xml", "--repair", "true", "--ignore-errors"])
+                       "output/trips.trips.xml", "-o", "output/original.rou.xml", "--repair", "true","--weights.priority-factor", "1",
+                       "--ignore-errors", "--no-internal-links"])
         subprocess.run(["duarouter", "-n", self.tlp_net_xml_filename, "--route-files",
-                       "output/trips_UAMS.trips.xml", "-o", "output/tlp.rou.xml", "--repair", "true", "--ignore-errors"])
+                       "output/trips_UAMS.trips.xml", "-o", "output/tlp.rou.xml", "--repair", "true","--weights.priority-factor", "1", 
+                       "--ignore-errors", "--no-internal-links"])
 
-    # Might be usefull
-    def generate_configVehTypeDistribution(self, filename):
-        f = open("output/" + filename, "w+")
-
-        f.write("vClass; costume1")
-        f.close("carFollowModel; Krauss")
 
     def add_UAMS(self):
         #Open trips

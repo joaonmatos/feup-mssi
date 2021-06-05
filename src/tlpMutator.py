@@ -14,7 +14,8 @@ class TlpMutator():
     
     def storePlainXML(self):
         subprocess.run(["netconvert", "--node-files=true.nod.xml", "--edge-files=true.edg.xml",
-         "--connection-files=true.con.xml","--tllogic-files=true.tll.xml", "--type-files=true.typ.xml", "--plain.extend-edge-shape"])    
+         "--connection-files=true.con.xml","--tllogic-files=true.tll.xml", "--type-files=true.typ.xml",
+         "--plain.extend-edge-shape", "--junctions.join"])    
         
         time.sleep(2)
         shutil.move("net.net.xml", "output/net.net.xml")
@@ -129,7 +130,7 @@ class TlpMutator():
                 xml_elem_edge.set("id", "TLP_to_net_edge_" + str(i) + "_" + str(j) + "_from")
                 xml_elem_edge.set("from", node_name)
                 xml_elem_edge.set("to", closest_node)
-                xml_elem_edge.set("priority", "1")
+                xml_elem_edge.set("priority", "2")
                 xml_elem_edge.set("numLanes", "1")
                 xml_elem_edge.set("speed", "13.89")
                 xml_elem_edge.set("allow", "custom1")
@@ -137,7 +138,7 @@ class TlpMutator():
                 xml_elem_edge.set("id", "TLP_to_net_edge_" + str(i) + "_" + str(j) + "_to")
                 xml_elem_edge.set("from", closest_node)
                 xml_elem_edge.set("to", node_name)
-                xml_elem_edge.set("priority", "1")
+                xml_elem_edge.set("priority", "2")
                 xml_elem_edge.set("numLanes", "1")
                 xml_elem_edge.set("speed", "13.89")
                 xml_elem_edge.set("allow", "custom1")
@@ -169,7 +170,7 @@ class TlpMutator():
             #xml_elem_edge.set("type", "airlane")
             xml_elem_edge.set("from", node0_id)
             xml_elem_edge.set("to", node1_id)
-            xml_elem_edge.set("priority", "1")
+            xml_elem_edge.set("priority", "2")
             xml_elem_edge.set("numLanes", "1")
             xml_elem_edge.set("speed", "75.00")
             xml_elem_edge.set("allow", "custom1") # is custom 1 the best option or de we create a vehicle type?
@@ -182,7 +183,9 @@ class TlpMutator():
 
             half_x = (node0_x + node1_x)/2
             half_y = (node0_y + node1_y)/2
-            shape_str = str(half_x) + "," + str(half_y) + ",200"
+
+            angle = (math.atan2(node1_x-node0_x, node1_y-node0_y)/math.pi) * 25 + 50
+            shape_str = str(half_x) + "," + str(half_y) + "," + str(angle)
             log(shape_str)
             xml_elem_edge.set("shape",shape_str)
 
@@ -194,9 +197,9 @@ class TlpMutator():
             #xml_elem_edge.set("type", "airlane")
             xml_elem_edge_2.set("from", node1_id)
             xml_elem_edge_2.set("to", node0_id)
-            xml_elem_edge_2.set("priority", "1")
+            xml_elem_edge_2.set("priority", "2")
             xml_elem_edge_2.set("numLanes", "1")
-            xml_elem_edge_2.set("speed", "1000.89")
+            xml_elem_edge_2.set("speed", "75.00")
             xml_elem_edge_2.set("allow", "custom1") # is custom 1 the best option or de we create a vehicle type?
             
             #shape calculation
@@ -207,7 +210,9 @@ class TlpMutator():
 
             half_x = (node0_x + node1_x)/2
             half_y = (node0_y + node1_y)/2
-            shape_str = str(half_x) + "," + str(half_y) + ",200"
+
+            angle = (math.atan2(node0_x-node1_x, node0_y-node1_y)/math.pi) * 25 + 75
+            shape_str = str(half_x) + "," + str(half_y) + "," + str(angle)
             log(shape_str)
             xml_elem_edge_2.set("shape",shape_str)
 
