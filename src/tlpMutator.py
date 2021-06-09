@@ -1,3 +1,4 @@
+from __future__ import with_statement
 import xml.etree.ElementTree as ET
 import subprocess
 import math
@@ -8,22 +9,24 @@ import time
 DEBUG = True
 
 class TlpMutator():
-
+    
+    added_edges = {}
+    
     def getPlainXML(self, filename):
-        subprocess.run(["netconvert", "--sumo-net-file",  filename ,"--plain-output-prefix"])
+        subprocess.run(["netconvert", "--sumo-net-file", filename ,"--plain-output-prefix", "true", "--remove-edges.isolated", "--keep-edges.by-vclass", "custom1"])
     
     def storePlainXML(self):
         subprocess.run(["netconvert", "--node-files=true.nod.xml", "--edge-files=true.edg.xml",
          "--connection-files=true.con.xml","--tllogic-files=true.tll.xml", "--type-files=true.typ.xml",
-         "--plain.extend-edge-shape", "--junctions.join"])    
+         "--plain.extend-edge-shape", "--junctions.join", "-o", "net.net.xml", "-v"])    
         
-        time.sleep(2)
-        shutil.move("net.net.xml", "output/net.net.xml")
+        time.sleep(3)
         shutil.move("true.con.xml", "output/true.con.xml")
         shutil.move("true.edg.xml", "output/true.edg.xml")
         shutil.move("true.nod.xml", "output/true.nod.xml")
         shutil.move("true.tll.xml", "output/true.ttl.xml")
         shutil.move("true.typ.xml", "output/true.typ.xml")   
+        shutil.move("net.net.xml", "output/net.net.xml")
     
     def __init__(self, net_xml_filename):
         
@@ -34,14 +37,13 @@ class TlpMutator():
         self.edg_xml_tree = ET.parse("true.edg.xml")
         self.edg_xml_root = self.edg_xml_tree.getroot()
         
-        #[DEPRECATED]
-        # #Open type 
-        # self.typ_xml_tree = ET.parse("true.typ.xml")
-        # self.typ_xml_root = self.typ_xml_tree.getroot()
-
         #Open nodes
         self.node_xml_tree = ET.parse("true.nod.xml")
         self.node_xml_root = self.node_xml_tree.getroot()
+
+        #Open connections
+        self.con_xml_tree = ET.parse("true.con.xml")
+        self.con_xml_root = self.con_xml_tree.getroot()
 
         #Get map size
         boundary = self.node_xml_root.find("location").get("convBoundary")
@@ -64,6 +66,8 @@ class TlpMutator():
     def get_closest_node(self, x, y):
         distance = None
         closest_node = None
+        inbound_edge = None
+        outbound_edge = None
         for node in self.parsed_nodes:
             node_x = self.parsed_nodes.get(node).get('x')
             node_y = self.parsed_nodes.get(node).get('y')
@@ -71,23 +75,65 @@ class TlpMutator():
             y_pitagoras = pow(y - float(node_y), 2)
             node_distance = math.sqrt(x_pitagoras + y_pitagoras)
             if distance is None or distance > node_distance:
-                if self.is_reachable_by_car(self.parsed_nodes.get(node)):
+                is_reachable, inbound, outbound = self.is_reachable_by_car(self.parsed_nodes.get(node))
+                print("IS REACHABLE: " + str(is_reachable) + str(inbound_edge) + str(outbound_edge))
+                if is_reachable:
                     closest_node = node
                     distance = node_distance
-        return closest_node
+                    inbound_edge = inbound
+                    outbound_edge = outbound 
+        return closest_node, inbound_edge, outbound_edge
 
     def is_reachable_by_car(self, node):
+        inboud = None
+        outbound = None
         for edge in self.edg_xml_root.findall("edge"):
-            if edge.get('to') == node.get('id') or  edge.get('from') == node.get('id'):
+            if edge.get('to') == node.get('id'):
                 if edge.get("disallow"):
                     if "passenger" not in edge.get("disallow"):
                         log("DISALLOW " + edge.get("id") + " " + edge.get("disallow"))
-                        return True
+                        inboud = edge.get('id')
                 if edge.get("allow"):   
                     if "passenger" in edge.get("allow"):
                         log("ALLOW " + edge.get("id") + " " + edge.get("allow"))
-                        return True
-        return False
+                        inboud = edge.get('id')
+            if edge.get('from') == node.get('id'):
+                if edge.get("disallow"):
+                    if "passenger" not in edge.get("disallow"):
+                        log("DISALLOW " + edge.get("id") + " " + edge.get("disallow"))
+                        outbound = edge.get('id')
+                if edge.get("allow"):   
+                    if "passenger" in edge.get("allow"):
+                        log("ALLOW " + edge.get("id") + " " + edge.get("allow"))
+                        outbound = edge.get('id')
+            if outbound is not None and inboud is not None:
+                return True, inboud, outbound
+        return False, None, None
+
+    #added_edges = {<edge_name>: edge_len}
+    def generate_weight_file(self):
+
+        # <meandata>
+        #     <interval begin="0" end="3600" id="whatever">
+        #         <edge id="edgeID1" traveltime="23"/>
+        #         <edge id="edgeID2" traveltime="1000"/>
+        #     </interval>
+        # </meandata>
+
+        root = ET.Element("meandata")
+        interval = ET.SubElement(root, "interval")
+        interval.set("begin", "0")
+        interval.set("end", "10000")
+        interval.set("id", "flight_edges")
+        
+        for id in self.added_edges:
+            print( "id: " + str(id) + "len: " + str(self.added_edges[id]))
+            edge = ET.SubElement(interval, "edge")
+            edge.set("id", id)
+            edge.set("traveltime", str(self.added_edges[id]))
+        tree = ET.ElementTree(root)
+        tree.write("output/custom.weights.xml")
+        return
 
     #Density in n_of_TLPs/km^2
     def generate_mutated_XML(self, density):
@@ -119,29 +165,49 @@ class TlpMutator():
                 xml_elem_node.set("x", str(x_offset + self.min_x))
                 xml_elem_node.set("y", str(y_offset + self.min_y))
                 xml_elem_node.set("type", "priority")
-                xml_elem_node.set("keepClear", "false")
                 
                 self.added_nodes.append({"id" : node_name, "x" : xml_elem_node.get("x"), "y" : xml_elem_node.get("y")})
 
                 #Add edge
 
-                closest_node = self.get_closest_node(x_offset + self.min_x, y_offset + self.min_y)
+                closest_node, inbound_edge, outbound_edge  = self.get_closest_node(x_offset + self.min_x, y_offset + self.min_y)
+
+                
                 xml_elem_edge = ET.SubElement(self.edg_xml_root, 'edge')
-                xml_elem_edge.set("id", "TLP_to_net_edge_" + str(i) + "_" + str(j) + "_from")
+
+                id_from = "TLP_to_net_edge_" + str(i) + "_" + str(j) + "_from"
+                xml_elem_edge.set("id", id_from)
                 xml_elem_edge.set("from", node_name)
                 xml_elem_edge.set("to", closest_node)
-                xml_elem_edge.set("priority", "2")
+                xml_elem_edge.set("priority", "1")
                 xml_elem_edge.set("numLanes", "1")
                 xml_elem_edge.set("speed", "13.89")
                 xml_elem_edge.set("allow", "custom1")
+                
                 xml_elem_edge = ET.SubElement(self.edg_xml_root, 'edge')
-                xml_elem_edge.set("id", "TLP_to_net_edge_" + str(i) + "_" + str(j) + "_to")
+
+                id_to = "TLP_to_net_edge_" + str(i) + "_" + str(j) + "_to"    
+                xml_elem_edge.set("id", id_to)
                 xml_elem_edge.set("from", closest_node)
                 xml_elem_edge.set("to", node_name)
-                xml_elem_edge.set("priority", "2")
+                xml_elem_edge.set("priority", "1")
                 xml_elem_edge.set("numLanes", "1")
                 xml_elem_edge.set("speed", "13.89")
                 xml_elem_edge.set("allow", "custom1")
+
+                #Add connection
+
+                xml_elem_con_1 = ET.SubElement(self.con_xml_root, 'connection')
+                xml_elem_con_1.set("from", str(inbound_edge))
+                xml_elem_con_1.set("to", str(id_to))
+                xml_elem_con_1.set("fromLane", "0") 
+                xml_elem_con_1.set("toLane", "0") 
+
+                xml_elem_con_2 = ET.SubElement(self.con_xml_root, 'connection')
+                xml_elem_con_2.set("from", str(id_from))
+                xml_elem_con_2.set("to", str(outbound_edge))
+                xml_elem_con_2.set("fromLane", "0") 
+                xml_elem_con_2.set("toLane", "0") 
 
         #[Deprecated]
         # #Disjoining nodes
@@ -154,10 +220,15 @@ class TlpMutator():
         self.add_flight_edges()
 
         #Write nodes
-        self.node_xml_tree.write("true.nod.xml")
+        self.node_xml_tree.write("./true.nod.xml", encoding="utf-8", xml_declaration=True)
         
-        #Write nedges
-        self.edg_xml_tree.write("true.edg.xml")
+        #Write edges
+        print(self.edg_xml_tree)
+        self.edg_xml_tree.write("./true.edg.xml", encoding="utf-8", xml_declaration=True)
+
+        #Write connections        
+        print(self.con_xml_tree)
+        self.con_xml_tree.write("true.con.xml")
 
 
     def add_flight_edges(self):
@@ -165,8 +236,10 @@ class TlpMutator():
             node0_id = pair[0].get('id')
             node1_id = pair[1].get('id')
             log("adding flight edg " + node0_id + " " + node1_id)
+            
+            id = "TLP_to_TLP_edge_" + str(node0_id) + "_" + str(node1_id)
             xml_elem_edge = ET.SubElement(self.edg_xml_root, 'edge')
-            xml_elem_edge.set("id", "TLP_to_TLP_edge_" + str(node0_id) + "_" + str(node1_id) + "_" + "1")
+            xml_elem_edge.set("id", id)
             #xml_elem_edge.set("type", "airlane")
             xml_elem_edge.set("from", node0_id)
             xml_elem_edge.set("to", node1_id)
@@ -184,16 +257,19 @@ class TlpMutator():
             half_x = (node0_x + node1_x)/2
             half_y = (node0_y + node1_y)/2
 
-            angle = (math.atan2(node1_x-node0_x, node1_y-node0_y)/math.pi) * 25 + 50
-            shape_str = str(half_x) + "," + str(half_y) + "," + str(angle)
+            height = (math.atan2(node1_x-node0_x, node1_y-node0_y)/math.pi) * 25 + 200
+            shape_str = str(half_x) + "," + str(half_y) + "," + str(height)
             log(shape_str)
             xml_elem_edge.set("shape",shape_str)
 
+            self.added_edges[id] = 1
 
             #Second edge
             log("adding flight edg " + node1_id + " " + node0_id)
+            
+            id = "TLP_to_TLP_edge_" + str(node1_id) + "_" + str(node0_id)
             xml_elem_edge_2 = ET.SubElement(self.edg_xml_root, 'edge')
-            xml_elem_edge_2.set("id", "TLP_to_TLP_edge_" + str(node0_id) + "_" + str(node1_id) + "_" + "2")
+            xml_elem_edge_2.set("id", id)
             #xml_elem_edge.set("type", "airlane")
             xml_elem_edge_2.set("from", node1_id)
             xml_elem_edge_2.set("to", node0_id)
@@ -211,20 +287,20 @@ class TlpMutator():
             half_x = (node0_x + node1_x)/2
             half_y = (node0_y + node1_y)/2
 
-            angle = (math.atan2(node0_x-node1_x, node0_y-node1_y)/math.pi) * 25 + 75
-            shape_str = str(half_x) + "," + str(half_y) + "," + str(angle)
+            height = (math.atan2(node0_x-node1_x, node0_y-node1_y)/math.pi) * 25 + 200
+            shape_str = str(half_x) + "," + str(half_y) + "," + str(height)
             log(shape_str)
             xml_elem_edge_2.set("shape",shape_str)
 
-            
+            self.added_edges[id] = 1
 
 def log(s):
     if DEBUG:
         print(s)
 
 #tlp_mutator = TlpMutator("input/feup.net.xml")
-tlp_mutator = TlpMutator("input/feup.net.xml")
-tlp_mutator.generate_mutated_XML(4)
+tlp_mutator = TlpMutator("input/mts.net.xml")
+tlp_mutator.generate_mutated_XML(3)
 tlp_mutator.storePlainXML()
 
 # #TODO: Add to typ file

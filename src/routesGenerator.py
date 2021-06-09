@@ -13,16 +13,16 @@ class RoutesGenerator:
     def generate_trips(self):
         #randomTrips.main(randomTrips.get_options(["-n " + self.original_net_xml_filename,"-e 50", "--vehicle-class UAMS", "--trip-attributes=\"maxSpeed=\\\"27.8\\\""]))
         randomTrips.main(randomTrips.get_options(
-            ["-n", self.original_net_xml_filename, "-e", "10000", "-p", "1", "-o", "output/trips.trips.xml"]))
+            ["-n", self.tlp_net_xml_filename, "-e", "10000", "-p", "1", "-o", "output/trips.trips.xml"]))
         # subprocess.run(["randomTrips.py", "--sumo-net-file",  filename ,"--plain-output-prefix"])
 
     def generate_route_files(self):
         subprocess.run(["duarouter", "-n", self.original_net_xml_filename, "--route-files",
-                       "output/trips.trips.xml", "-o", "output/original.rou.xml", "--repair", "true","--weights.priority-factor", "1",
-                       "--ignore-errors", "--no-internal-links"])
+                       "output/trips.trips.xml", "-o", "output/original.rou.xml", "--repair",
+                       "--ignore-errors", "-W"])
         subprocess.run(["duarouter", "-n", self.tlp_net_xml_filename, "--route-files",
-                       "output/trips_UAMS.trips.xml", "-o", "output/tlp.rou.xml", "--repair", "true","--weights.priority-factor", "1", 
-                       "--ignore-errors", "--no-internal-links"])
+                       "output/trips_UAMS.trips.xml",
+                       "--ignore-errors", "-o", "output/tlp.rou.xml", "-W"])
 
 
     def add_UAMS(self):
@@ -32,14 +32,16 @@ class RoutesGenerator:
         
         
         #<vType id="custom1" vClass="custom1"/>
-        trips_routes_node = ET.Element('vType')
-        trips_routes_node.set("id", "UAMS")
-        trips_routes_node.set("vClass", "custom1")
-        trips_routes_node.set("maxSpeed", "75")
-        self.trips_xml_root.insert(0, trips_routes_node)
+        vType_node = ET.Element('vType')
+        vType_node.set("id", "UAMS")
+        vType_node.set("vClass", "custom1")
+        vType_node.set("maxSpeed", "75")
+        vType_node.set("color", "1,0,1")
 
-        #Adding x ratio of costume1 trips
-        x = 0.90
+        self.trips_xml_root.insert(0, vType_node)
+
+        #Adding x ratio of custom1 trips
+        x = 1
 
         trips = self.trips_xml_root.findall("trip")
         for i in range(len(trips)):
@@ -51,17 +53,8 @@ class RoutesGenerator:
         
         pass
 
-    def create_UAMS_vType(self, filename):
-        f = open("output/" + filename, "w+")
-        f.write("<additional>")
-        f.write("  <vType id=\"UAMS\" maxSpeed=\"27\" vClass=\"custom1\"/>")
-        f.write("</additional>")
 
-        f.write("<additional>")
-        f.close("<vType id=\"myType\" maxSpeed=\"27\" vClass=\"passenger\"/>")
-
-
-generator = RoutesGenerator("input/feup.net.xml", "output/net.net.xml")
+generator = RoutesGenerator("input/mts.net.xml", "output/net.net.xml")
 generator.generate_trips()
 generator.add_UAMS()
 generator.generate_route_files()
