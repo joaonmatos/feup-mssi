@@ -301,20 +301,6 @@ class TlpMutator():
 
             self.added_edges[id] = 1
 
-    def reopen_plain_xml(self):
-        #Open edges
-        self.edg_xml_tree = ET.parse("true.edg.xml")
-        self.edg_xml_root = self.edg_xml_tree.getroot()
-        
-        #Open nodes
-        self.node_xml_tree = ET.parse("true.nod.xml")
-        self.node_xml_root = self.node_xml_tree.getroot()
-
-        #Open connections
-        self.con_xml_tree = ET.parse("true.con.xml")
-        self.con_xml_root = self.con_xml_tree.getroot()
-
-
 def log(s):
     if DEBUG:
         print(s)

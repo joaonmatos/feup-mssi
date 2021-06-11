@@ -129,7 +129,11 @@ def data_gatherer():
     if trips_max <= trips_min:
         sg.popup('Maximum trips must be greater than minimum trips')
         return
-    trips_range = np.arange(int(trips_min), int(trips_max), int((trips_max-trips_min)/trips_steps))
+        
+    if trips_steps == 1:
+        trips_range = [trips_max]
+    else:
+        trips_range = np.arange(int(trips_min), int(trips_max+1), int((trips_max-trips_min)/(trips_steps-1)))
 
     uams_max = values[4]
     uams_min = values[5]
@@ -137,7 +141,12 @@ def data_gatherer():
     if uams_max <= uams_min:
         sg.popup('Maximum UAMS Ratio must be greater than minimum UAMS Ratio')
         return
-    uams_range = np.arange(uams_min, uams_max, (uams_max-uams_min)/uams_steps)
+
+    if uams_steps == 1:
+        uams_range = [uams_max]
+    else:
+        sg.popup("step = " + str((uams_max-uams_min)/(uams_steps-1)))
+        uams_range = np.arange(uams_min, uams_max + 0.1, ((uams_max-uams_min)/(uams_steps-1)))
 
     tlp_max = values[7]
     tlp_min = values[8]
