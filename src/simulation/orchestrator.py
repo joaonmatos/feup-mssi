@@ -28,7 +28,6 @@ class Orchestrator(object):
         self.tlp_mutator.importOSM(
             self.osm_filename, "simulation/output/original.net.xml")
 
-        self.log_queue.put(str(self.tlps_set))
         for tlps in self.tlps_set:
             self.generate_net_files(tlps)
 
@@ -38,8 +37,6 @@ class Orchestrator(object):
 
     def sim_grid_search(self):
         for current_params in product(self.tlps_set, self.trips_set, self.uams_set):
-            self.log_queue.put(
-                "Running simulation for parameters:" + str(current_params))
             self.generate_route_files(
                 current_params[0], current_params[1], current_params[2])
         return

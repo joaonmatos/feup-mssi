@@ -145,7 +145,6 @@ def data_gatherer():
     if uams_steps == 1:
         uams_range = [uams_max]
     else:
-        sg.popup("step = " + str((uams_max-uams_min)/(uams_steps-1)))
         uams_range = np.arange(uams_min, uams_max + 0.1, ((uams_max-uams_min)/(uams_steps-1)))
 
     tlp_max = values[7]
