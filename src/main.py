@@ -8,7 +8,7 @@ else:
     sys.exit("please declare environment variable 'SUMO_HOME'")
 
 sumoBinary = "C:/Program Files (x86)/Eclipse/Sumo/bin/sumo-gui"
-sumoConfig = ["-c", "input/network.sumocfg", "-S"]
+sumoConfig = ["-c", "network.sumocfg", "-S"]
 
 sumoCmd = [sumoBinary, sumoConfig[0], sumoConfig[1], sumoConfig[2]]
 
@@ -38,7 +38,8 @@ class StateListener(traci.StepListener):
         # receive vehicle data
         for vehicleId in self.vehicleIds:
             self.vehicles[vehicleId] = traci.vehicle.getSubscriptionResults(vehicleId)
-
+            self.vehicles[vehicleId].rerouteTraveltime()
+            
     def printState(self):
         # print vehicle data
          for vehicleId in self.vehicleIds:
@@ -69,19 +70,8 @@ class StateListener(traci.StepListener):
 print("Starting the TraCI server...")
 traci.start(sumoCmd) 
 
-print("Subscribing to vehicle data...")
-traci.vehicle.subscribe("veh0", (tc.VAR_COLOR, tc.VAR_SPEED, tc.VAR_ACCELERATION, tc.VAR_POSITION, tc.VAR_LANE_ID, tc.VAR_LANEPOSITION))
-traci.vehicle.subscribe("veh1", (tc.VAR_COLOR, tc.VAR_SPEED, tc.VAR_ACCELERATION, tc.VAR_POSITION, tc.VAR_LANE_ID, tc.VAR_LANEPOSITION))
-traci.vehicle.subscribe("veh2", (tc.VAR_COLOR, tc.VAR_SPEED, tc.VAR_ACCELERATION, tc.VAR_POSITION, tc.VAR_LANE_ID, tc.VAR_LANEPOSITION))
 
 print("Constructing a StateListener...")
-stateListener = StateListener(["veh0", "veh1", "veh2"])
-traci.addStepListener(stateListener)
-
-# disable speed control by SUMO
-traci.vehicle.setSpeedMode("veh0",0)
-# set the desired speed and the time to reach that speed
-traci.vehicle.slowDown("veh0",1,3)
 
 step = 0
 while step < 20:
