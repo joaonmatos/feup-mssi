@@ -17,6 +17,7 @@ class RoutesGenerator:
         # subprocess.run(["randomTrips.py", "--sumo-net-file",  filename ,"--plain-output-prefix"])
 
     def generate_route_files(self, trips_xml_filename, routes_xml_filename):
+        print(self.tlp_net_xml_filename + " " + trips_xml_filename + " " + routes_xml_filename)
         subprocess.run(["duarouter", "-n", self.tlp_net_xml_filename, "--route-files",
                        trips_xml_filename,
                        "--ignore-errors", "-o", routes_xml_filename, "-W"])
@@ -46,8 +47,27 @@ class RoutesGenerator:
         # Save Trips
         self.trips_xml_tree.write(new_trips_xml_filename)
 
-        pass
+        return
 
+    def generate_sumocfg(self, template_filename, net_xml_filename, routes_xml_filename, simulation_time, sumocfg_filename):
+        sumocnf_tree = ET.parse(template_filename)
+        sumocnf_xml_root = sumocnf_tree.getroot()
+
+        input_node = sumocnf_xml_root.find("input")
+        net_file_node = input_node.find("net-file")
+        route_files_node = input_node.find("route-files")
+        time_node = sumocnf_xml_root.find("time")
+        end_time_node = time_node.find("end")
+        print(sumocnf_tree)
+        print(sumocnf_xml_root)
+        print(net_file_node)
+        print(route_files_node)
+        print(end_time_node)
+        net_file_node.set("value", net_xml_filename)
+        route_files_node.set("value", routes_xml_filename)
+        end_time_node.set("value", str(simulation_time))
+
+        sumocnf_tree.write(sumocfg_filename)
 
 # generator = RoutesGenerator("input/mts.net.xml", "output/net.net.xml")
 # generator.generate_trips()

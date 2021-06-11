@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
   <input>
-    <net-file value="output/net.net.xml"/>
-    <route-files value="output/tlp.rou.xml"/>
+    <net-file value=""/>
+    <route-files value=""/>
   </input>
   <time>
     <begin value="0"/>
-    <end value="10000"/>
+    <end value=""/>
   </time>
 </configuration>

@@ -55,10 +55,10 @@ class Orchestrator(object):
     added_uams = []
 
     def generate_route_files(self, tlps, trips, uams):
-       
+
         route_generator = rg.RoutesGenerator(
-            f'simulation/output/mutated{tlps}.net.xml', "simulation/output/original.net.xml")
-       
+            "simulation/output/original.net.xml", f'simulation/output/mutated{tlps}.net.xml')
+
         if trips not in self.trips_generated:
             self.trips_generated.append(trips)
             self.log_queue.put(
@@ -71,9 +71,11 @@ class Orchestrator(object):
             self.trips_generated.append(trip_file_id)
             route_generator.add_UAMS(
                 uams, f'simulation/output/trips{trips}.trips.xml', f'simulation/output/trips{trips}_ratio_{uams}.trips.xml')
-       
+
         route_generator.generate_route_files(
             f'simulation/output/trips{trips}_ratio_{uams}.trips.xml', f'simulation/output/routes-trips{trips}_uams{uams}_tlps{tlps}.rou.xml')
+
+        route_generator.generate_sumocfg('simulation/simcfg/template.sumocfg', f'simulation/output/mutated{tlps}.net.xml', f'simulation/output/routes-trips{trips}_uams{uams}_tlps{tlps}.rou.xml', self.simulation_time, f'simulation/simcfg/config-trips{trips}_uams{uams}_tlps{tlps}.sumocfg')
 
     def run_simulation(self):
         pass
