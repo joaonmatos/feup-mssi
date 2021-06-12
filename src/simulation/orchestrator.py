@@ -4,7 +4,7 @@ import math
 import simulation.tlpMutator as tlpm
 import simulation.routesGenerator as rg
 from itertools import product
-
+from simulation.simulationManager import SimulationManager
 
 class Orchestrator(object):
 
@@ -31,11 +31,11 @@ class Orchestrator(object):
         for tlps in self.tlps_set:
             self.generate_net_files(tlps)
 
-        self.sim_grid_search()
-
+        self.grid_create_files()
+        self.grid_run_games()
         return
 
-    def sim_grid_search(self):
+    def grid_create_files(self):
         for current_params in product(self.tlps_set, self.trips_set, self.uams_set):
             self.generate_route_files(
                 current_params[0], current_params[1], current_params[2])
@@ -75,7 +75,14 @@ class Orchestrator(object):
         route_generator.generate_route_files(
             f'simulation/output/trips{trips}_ratio_{uams}.trips.xml', f'simulation/output/routes-trips{trips}_uams{uams}_tlps{tlps}.rou.xml')
 
-        route_generator.generate_sumocfg('simulation/simcfg/template.sumocfg', f'simulation/output/mutated{tlps}.net.xml', f'simulation/output/routes-trips{trips}_uams{uams}_tlps{tlps}.rou.xml', self.simulation_time, f'simulation/simcfg/config-trips{trips}_uams{uams}_tlps{tlps}.sumocfg')
+        route_generator.generate_sumocfg('simulation/simcfg/template.sumocfg', f'../output/mutated{tlps}.net.xml', f'../output/routes-trips{trips}_uams{uams}_tlps{tlps}.rou.xml', self.simulation_time, f'simulation/simcfg/config-trips{trips}_uams{uams}_tlps{tlps}.sumocfg')
 
-    def run_simulation(self):
-        pass
+    def grid_run_games(self):
+            for current_params in product(self.tlps_set, self.trips_set, self.uams_set):
+                self.run_simulation(f'simulation/simcfg/config-trips{current_params[1]}_uams{current_params[2]}_tlps{current_params[0]}.sumocfg')
+            return
+            
+    def run_simulation(self, cfg_filename):
+        sim_manager = SimulationManager(cfg_filename)
+        sim_manager.run_simulation(self.simulation_time)
+        return
