@@ -154,7 +154,8 @@ class TlpMutator():
         x_size = self.max_x - self.min_x
         y_size = self.max_y - self.min_y
         
-
+        in_edges = {}
+        out_edges = {}
         
         for i in range(density):
             x_grid_cell_len = x_size/density
@@ -216,6 +217,10 @@ class TlpMutator():
                 xml_elem_con_2.set("fromLane", "0") 
                 xml_elem_con_2.set("toLane", "0") 
 
+                #Information for additional file
+                in_edges[node_name] = id_from
+                out_edges[node_name] = id_to
+
         #[Deprecated]
         # #Disjoining nodes
         # #<joinExclude nodes=""/>
@@ -236,7 +241,7 @@ class TlpMutator():
         #Write connections        
         print(self.con_xml_tree)
         self.con_xml_tree.write("true.con.xml")
-
+        return in_edges, out_edges
 
     def add_flight_edges(self):
         for pair in itertools.combinations(self.added_nodes, 2):

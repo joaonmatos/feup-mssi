@@ -49,25 +49,60 @@ class RoutesGenerator:
 
         return
 
-    def generate_sumocfg(self, template_filename, net_xml_filename, routes_xml_filename, simulation_time, sumocfg_filename):
+    def generate_sumocfg(self, template_filename, net_xml_filename, routes_xml_filename, add_xml_filename, simulation_time, sumocfg_filename):
         sumocnf_tree = ET.parse(template_filename)
         sumocnf_xml_root = sumocnf_tree.getroot()
 
         input_node = sumocnf_xml_root.find("input")
         net_file_node = input_node.find("net-file")
         route_files_node = input_node.find("route-files")
+        add_files_node = input_node.find("additional-files")
         time_node = sumocnf_xml_root.find("time")
         end_time_node = time_node.find("end")
-        print(sumocnf_tree)
-        print(sumocnf_xml_root)
-        print(net_file_node)
-        print(route_files_node)
-        print(end_time_node)
+
         net_file_node.set("value", net_xml_filename)
         route_files_node.set("value", routes_xml_filename)
+        add_files_node.set("value", add_xml_filename)
         end_time_node.set("value", str(simulation_time))
 
         sumocnf_tree.write(sumocfg_filename)
+
+    def generate_additional_file(self, add_filename, in_edges, out_edges, simulation_time, detector_filename, edge_filename):
+        root = ET.Element("additional")
+
+        #Edge info for passenger
+        edgedata_node = ET.SubElement(root, "edgeData")
+        edgedata_node.set("id", "edge_data_id_passenger")
+        edgedata_node.set("file", edge_filename)
+        edgedata_node.set("vTypes", "passenger")
+
+        #Edge info for custom1
+        edgedata_node = ET.SubElement(root, "edgeData")
+        edgedata_node.set("id", "edge_data_id_passenger")
+        edgedata_node.set("file", edge_filename)
+        edgedata_node.set("vTypes", "custom1")
+        
+        #IN detector creation
+        for node in in_edges:
+            induction_loop_node = ET.SubElement(root, "inductionLoop")
+            induction_loop_node.set("id", node + "_in")
+            induction_loop_node.set("lane", in_edges[node] + "_0")
+            induction_loop_node.set("pos", "0")
+            induction_loop_node.set("freq", str(simulation_time))
+            induction_loop_node.set("file", detector_filename)
+        print(out_edges)
+        #OUT detector cretion
+        for node in out_edges:
+            induction_loop_node = ET.SubElement(root, "inductionLoop")
+            induction_loop_node.set("id", node + "_out")
+            induction_loop_node.set("lane", out_edges[node] + "_0")
+            induction_loop_node.set("pos", "0")
+            induction_loop_node.set("freq", str(simulation_time))
+            induction_loop_node.set("file", detector_filename)
+
+
+        tree = ET.ElementTree(root)
+        tree.write(add_filename)
 
 # generator = RoutesGenerator("input/mts.net.xml", "output/net.net.xml")
 # generator.generate_trips()
