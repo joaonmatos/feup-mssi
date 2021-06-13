@@ -34,14 +34,14 @@ options_column = [
     ],
     [
         sg.Text("Maximum"),
-        sg.Slider([10, 50000],
+        sg.Slider([100, 5000],
          size=(20,15),
          orientation='horizontal',
          font=('Helvetica', 12))
     ],
     [
         sg.Text("Minimum"),  
-        sg.Slider([10, 50000],
+        sg.Slider([100, 5000],
          size=(20,15),
          orientation='horizontal',
          font=('Helvetica', 12))

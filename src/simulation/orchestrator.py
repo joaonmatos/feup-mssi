@@ -84,6 +84,7 @@ class Orchestrator(object):
                                          f'../output/mutated{tlps}.net.xml', 
                                          f'../output/routes-trips{trips}_uams{uams}_tlps{tlps}.rou.xml', 
                                          f'../additional_files/add-trips{trips}_uams{uams}_tlps{tlps}.xml', 
+                                         f'../metrics/tripinfo-trips{trips}_uams{uams}_tlps{tlps}.xml', 
                                          self.simulation_time, 
                                          f'simulation/simcfg/config-trips{trips}_uams{uams}_tlps{tlps}.sumocfg')
         print("Detectror Edges" + str(self.detector_edges))

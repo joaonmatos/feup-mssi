@@ -49,7 +49,7 @@ class RoutesGenerator:
 
         return
 
-    def generate_sumocfg(self, template_filename, net_xml_filename, routes_xml_filename, add_xml_filename, simulation_time, sumocfg_filename):
+    def generate_sumocfg(self, template_filename, net_xml_filename, routes_xml_filename, add_xml_filename, tripinfo_xml_filename, simulation_time, sumocfg_filename):
         sumocnf_tree = ET.parse(template_filename)
         sumocnf_xml_root = sumocnf_tree.getroot()
 
@@ -57,12 +57,15 @@ class RoutesGenerator:
         net_file_node = input_node.find("net-file")
         route_files_node = input_node.find("route-files")
         add_files_node = input_node.find("additional-files")
+        output_node = sumocnf_xml_root.find("output")
+        tripinfo_time_node = output_node.find("tripinfo-output")
         time_node = sumocnf_xml_root.find("time")
         end_time_node = time_node.find("end")
 
         net_file_node.set("value", net_xml_filename)
         route_files_node.set("value", routes_xml_filename)
         add_files_node.set("value", add_xml_filename)
+        tripinfo_time_node.set("value", tripinfo_xml_filename)
         end_time_node.set("value", str(simulation_time))
 
         sumocnf_tree.write(sumocfg_filename)
@@ -72,15 +75,16 @@ class RoutesGenerator:
 
         #Edge info for passenger
         edgedata_node = ET.SubElement(root, "edgeData")
-        edgedata_node.set("id", "edge_data_id_passenger")
+        edgedata_node.set("id", "edge_data_id_default")
         edgedata_node.set("file", edge_filename)
-        edgedata_node.set("vTypes", "passenger")
+
+        edgedata_node.set("vTypes", "DEFAULT_VEHTYPE")
 
         #Edge info for custom1
         edgedata_node = ET.SubElement(root, "edgeData")
-        edgedata_node.set("id", "edge_data_id_passenger")
+        edgedata_node.set("id", "edge_data_id_uams")
         edgedata_node.set("file", edge_filename)
-        edgedata_node.set("vTypes", "custom1")
+        edgedata_node.set("vTypes", "UAMS")
         
         #IN detector creation
         for node in in_edges:

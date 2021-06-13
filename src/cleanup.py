@@ -2,6 +2,7 @@ import os, shutil
 folder1 = 'simulation/output'
 folder2 = 'simulation/simcfg'
 folder3 = 'simulation/additional_files'
+folder4 = 'simulation/metrics'
 
 def delete(folder):
     for filename in os.listdir(folder):
@@ -20,3 +21,5 @@ delete(folder1)
 delete(folder2)
 
 delete(folder3)
+
+delete(folder4)
