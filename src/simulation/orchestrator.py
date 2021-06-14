@@ -47,7 +47,8 @@ class Orchestrator(object):
         self.log_queue.put("Generating network with " + str(tlps) + " TLPs")
         self.tlp_mutator.deconstruct_net_file(
             "simulation/output/original.net.xml")
-        in_edges, out_edges = self.tlp_mutator.generate_mutated_XML(int(math.sqrt(tlps)))
+        in_edges, out_edges = self.tlp_mutator.generate_mutated_XML(
+            int(math.sqrt(tlps)))
         self.tlp_mutator.storePlainXML(
             f'simulation/output/mutated{tlps}.net.xml')
         self.tlp_mutator.cleanup()
@@ -73,29 +74,30 @@ class Orchestrator(object):
         if trip_file_id not in self.added_uams:
             self.trips_generated.append(trip_file_id)
             route_generator.add_UAMS(
-                uams, f'simulation/output/trips{trips}.trips.xml', 
+                uams, f'simulation/output/trips{trips}.trips.xml',
                 f'simulation/output/trips{trips}_ratio_{uams}.trips.xml')
 
         route_generator.generate_route_files(
-            f'simulation/output/trips{trips}_ratio_{uams}.trips.xml', 
+            f'simulation/output/trips{trips}_ratio_{uams}.trips.xml',
             f'simulation/output/routes-trips{trips}_uams{uams}_tlps{tlps}.rou.xml')
 
         route_generator.generate_sumocfg('simulation/template.sumocfg',
-                                         f'../output/mutated{tlps}.net.xml', 
-                                         f'../output/routes-trips{trips}_uams{uams}_tlps{tlps}.rou.xml', 
-                                         f'../additional_files/add-trips{trips}_uams{uams}_tlps{tlps}.xml', 
-                                         f'../metrics/tripinfo-trips{trips}_uams{uams}_tlps{tlps}.xml', 
-                                         self.simulation_time, 
+                                         f'../output/mutated{tlps}.net.xml',
+                                         f'../output/routes-trips{trips}_uams{uams}_tlps{tlps}.rou.xml',
+                                         f'../additional_files/add-trips{trips}_uams{uams}_tlps{tlps}.xml',
+                                         f'../metrics/tripinfo-trips{trips}_uams{uams}_tlps{tlps}.xml',
+                                         self.simulation_time,
                                          f'simulation/simcfg/config-trips{trips}_uams{uams}_tlps{tlps}.sumocfg')
         print("Detectror Edges" + str(self.detector_edges))
         route_generator.generate_additional_file(
-            f'simulation/additional_files/add-trips{trips}_uams{uams}_tlps{tlps}.xml', 
+            f'simulation/additional_files/add-trips{trips}_uams{uams}_tlps{tlps}.xml',
             self.detector_edges[tlps][0], self.detector_edges[tlps][1], self.simulation_time,
-            f'../metrics/detectors_trips{trips}_uams{uams}_tlps{tlps}.xml',f'../metrics/edges_trips{trips}_uams{uams}_tlps{tlps}.xml')
+            f'../metrics/detectors_trips{trips}_uams{uams}_tlps{tlps}.xml', f'../metrics/edges_trips{trips}_uams{uams}_tlps{tlps}.xml')
 
     def grid_run_games(self):
         for current_params in product(self.tlps_set, self.trips_set, self.uams_set):
-            self.run_simulation(f'simulation/simcfg/config-trips{current_params[1]}_uams{current_params[2]}_tlps{current_params[0]}.sumocfg')
+            self.run_simulation(
+                f'simulation/simcfg/config-trips{current_params[1]}_uams{current_params[2]}_tlps{current_params[0]}.sumocfg')
         return
 
     def run_simulation(self, cfg_filename):

@@ -17,7 +17,8 @@ class RoutesGenerator:
         # subprocess.run(["randomTrips.py", "--sumo-net-file",  filename ,"--plain-output-prefix"])
 
     def generate_route_files(self, trips_xml_filename, routes_xml_filename):
-        print(self.tlp_net_xml_filename + " " + trips_xml_filename + " " + routes_xml_filename)
+        print(self.tlp_net_xml_filename + " " +
+              trips_xml_filename + " " + routes_xml_filename)
         subprocess.run(["duarouter", "-n", self.tlp_net_xml_filename, "--route-files",
                        trips_xml_filename,
                        "--ignore-errors", "-o", routes_xml_filename, "-W"])
@@ -73,20 +74,20 @@ class RoutesGenerator:
     def generate_additional_file(self, add_filename, in_edges, out_edges, simulation_time, detector_filename, edge_filename):
         root = ET.Element("additional")
 
-        #Edge info for passenger
+        # Edge info for passenger
         edgedata_node = ET.SubElement(root, "edgeData")
         edgedata_node.set("id", "edge_data_id_default")
         edgedata_node.set("file", edge_filename)
 
         edgedata_node.set("vTypes", "DEFAULT_VEHTYPE")
 
-        #Edge info for custom1
+        # Edge info for custom1
         edgedata_node = ET.SubElement(root, "edgeData")
         edgedata_node.set("id", "edge_data_id_uams")
         edgedata_node.set("file", edge_filename)
         edgedata_node.set("vTypes", "UAMS")
-        
-        #IN detector creation
+
+        # IN detector creation
         for node in in_edges:
             induction_loop_node = ET.SubElement(root, "inductionLoop")
             induction_loop_node.set("id", node + "_in")
@@ -95,7 +96,7 @@ class RoutesGenerator:
             induction_loop_node.set("freq", str(simulation_time))
             induction_loop_node.set("file", detector_filename)
         print(out_edges)
-        #OUT detector cretion
+        # OUT detector cretion
         for node in out_edges:
             induction_loop_node = ET.SubElement(root, "inductionLoop")
             induction_loop_node.set("id", node + "_out")
@@ -103,7 +104,6 @@ class RoutesGenerator:
             induction_loop_node.set("pos", "0")
             induction_loop_node.set("freq", str(simulation_time))
             induction_loop_node.set("file", detector_filename)
-
 
         tree = ET.ElementTree(root)
         tree.write(add_filename)

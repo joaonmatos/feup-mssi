@@ -63,7 +63,8 @@ def get_options(args=None):
                          default=False, help="create a person file with pedestrian trips instead of vehicle trips")
     optParser.add_option("--persontrips", action="store_true",
                          default=False, help="create a person file with person trips instead of vehicle trips")
-    optParser.add_option("--personrides", help="create a person file with rides using STR as lines attribute")
+    optParser.add_option(
+        "--personrides", help="create a person file with rides using STR as lines attribute")
     optParser.add_option("--persontrip.transfer.car-walk", dest="carWalkMode",
                          help="Where are mode changes from car to walking allowed " +
                          "(possible values: 'ptStops', 'allJunctions' and combinations)")
@@ -77,11 +78,13 @@ def get_options(args=None):
     optParser.add_option("--fringe-start-attributes", dest="fringeattrs",
                          default="", help="additional trip attributes when starting on a fringe.")
     optParser.add_option("-b", "--begin", default=0, help="begin time")
-    optParser.add_option("-e", "--end", default=3600, help="end time (default 3600)")
+    optParser.add_option("-e", "--end", default=3600,
+                         help="end time (default 3600)")
     optParser.add_option(
         "-p", "--period", type="float", default=1, help="Generate vehicles with equidistant departure times and " +
         "period=FLOAT (default 1.0). If option --binomial is used, the expected arrival rate is set to 1/period.")
-    optParser.add_option("-s", "--seed", type="int", default=42, help="random seed")
+    optParser.add_option("-s", "--seed", type="int",
+                         default=42, help="random seed")
     optParser.add_option("--random", action="store_true",
                          default=False, help="use a random seed to initialize the random number generator")
     optParser.add_option("-l", "--length", action="store_true",
@@ -162,12 +165,14 @@ def get_options(args=None):
         sys.exit(1)
 
     if options.jtrrouter and options.flows <= 0:
-        print("Error: Option --jtrrouter must be used with option --flows", file=sys.stderr)
+        print("Error: Option --jtrrouter must be used with option --flows",
+              file=sys.stderr)
         sys.exit(1)
 
     if options.vehicle_class:
         if options.tripprefix:
-            options.vtypeID = "%s_%s" % (options.tripprefix, options.vehicle_class)
+            options.vtypeID = "%s_%s" % (
+                options.tripprefix, options.vehicle_class)
         else:
             options.vtypeID = options.vehicle_class
 
@@ -210,7 +215,8 @@ class RandomEdgeGenerator:
     def write_weights(self, fname, interval_id, begin, end):
         # normalize to [0,100]
         normalizer = 100.0 / max(1, max(map(self.weight_fun, self.net._edges)))
-        weights = [(self.weight_fun(e) * normalizer, e.getID()) for e in self.net.getEdges()]
+        weights = [(self.weight_fun(e) * normalizer, e.getID())
+                   for e in self.net.getEdges()]
         weights.sort(reverse=True)
         with open(fname, 'w+') as f:
             f.write('<edgedata>\n')
@@ -268,7 +274,8 @@ def get_prob_fun(options, fringe_bonus, fringe_forbidden, max_length):
             return 0  # the wrong kind of fringe
         if (fringe_bonus is not None and options.viaEdgeTypes is not None and not edge.is_fringe() and
                 edge.getType() in options.viaEdgeTypes):
-            return 0  # the wrong type of edge (only allows depart and arrival on the fringe)
+            # the wrong type of edge (only allows depart and arrival on the fringe)
+            return 0
         prob = 1
         if options.length:
             if options.fringe_factor != 1.0 and fringe_bonus is not None and edge.is_fringe():
