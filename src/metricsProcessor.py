@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional
 import xml.etree.ElementTree as ET
 
 
@@ -44,11 +44,8 @@ class GadStats:
     def get_air_distance(self) -> float:
         return self.atd
 
-    def get_atd(self) -> float:
-        if self.gtd is not 0.0:
-            return self.atd / self.gtd
-        else:
-            return self.gtd
+    def get_atd(self) -> Optional[float]:
+        return self.atd / self.gtd if self.gtd != 0.0 else None
 
     def __repr__(self) -> str:
         return f'GAD Stats(GAD {self.get_atd()})'
