@@ -1,6 +1,8 @@
-import queue
-import time
 import math
+import time
+import csv
+
+from metricsProcessor import MetricsProcessor
 import simulation.tlpMutator as tlpm
 import simulation.routesGenerator as rg
 from itertools import product
@@ -18,6 +20,8 @@ class Orchestrator(object):
         self.log_queue = log_queue
         self.tlp_mutator = tlpm.TlpMutator()
         self.detector_edges = {}
+        self.output_filename = time.strftime(
+            "%m%d-%H%M%S") + "_metrics.csv"
 
     def run_simulations(self):
         self.log_queue.put('Simulation parameters')
@@ -35,6 +39,7 @@ class Orchestrator(object):
 
         self.grid_create_files()
         self.grid_run_games()
+        self.grid_get_metrics()
         return
 
     def grid_create_files(self):
@@ -85,7 +90,7 @@ class Orchestrator(object):
                                          f'../output/mutated{tlps}.net.xml',
                                          f'../output/routes-trips{trips}_uams{uams}_tlps{tlps}.rou.xml',
                                          f'../additional_files/add-trips{trips}_uams{uams}_tlps{tlps}.xml',
-                                         f'../metrics/tripinfo-trips{trips}_uams{uams}_tlps{tlps}.xml',
+                                         f'../metrics/tripinfo_trips{trips}_uams{uams}_tlps{tlps}.xml',
                                          self.simulation_time,
                                          f'simulation/simcfg/config-trips{trips}_uams{uams}_tlps{tlps}.sumocfg')
         print("Detectror Edges" + str(self.detector_edges))
@@ -95,12 +100,47 @@ class Orchestrator(object):
             f'../metrics/detectors_trips{trips}_uams{uams}_tlps{tlps}.xml', f'../metrics/edges_trips{trips}_uams{uams}_tlps{tlps}.xml')
 
     def grid_run_games(self):
-        for current_params in product(self.tlps_set, self.trips_set, self.uams_set):
+        for current_params in product(self.trips_set, self.uams_set, self.tlps_set):
             self.run_simulation(
-                f'simulation/simcfg/config-trips{current_params[1]}_uams{current_params[2]}_tlps{current_params[0]}.sumocfg')
+                f'simulation/simcfg/config-trips{current_params[0]}_uams{current_params[1]}_tlps{current_params[2]}.sumocfg')
         return
 
     def run_simulation(self, cfg_filename):
         sim_manager = SimulationManager(cfg_filename)
         sim_manager.run_simulation(self.simulation_time)
+        return
+
+    def grid_get_metrics(self):
+        for current_params in product(self.trips_set, self.uams_set, self.tlps_set):
+            metrics_processor = MetricsProcessor(
+                "simulation/metrics", f'trips{current_params[0]}_uams{current_params[1]}_tlps{current_params[2]}')
+            metrics_processor.run()
+            self.register_metrics(current_params[0], current_params[1], current_params[2],
+                                  metrics_processor.get_tlp_stats(), metrics_processor.get_trip_info(), metrics_processor.get_ground_air_distance())
+
+        return
+
+    def register_metrics(self, trips, uams, tlps, tlp_stats, trip_info, ground_air_distance):
+
+        rows = [
+            ["SimParams", "trips", trips, "uams", uams, "tlps", tlps],
+            [],
+            ["TLPName", "UAMS_IN", "UAMS_OUT"]
+        ]
+        print(tlp_stats)
+
+        for tlp in tlp_stats:
+            row = [tlp, tlp_stats[tlp].get_num_in(), tlp_stats[tlp].get_num_out()]
+            rows.append(row)
+
+        rows.append([])
+        rows.append(["Average_Travel_Time", "Total_Distance",
+                    "UAMS_Ground_Distance", "UAMS_Air_Distance", "UAMS_GtoA_Ratio"])
+        rows.append([trip_info.get_att(), trip_info.get_total_distance(), ground_air_distance.get_ground_distance(), ground_air_distance.get_air_distance(), ground_air_distance.get_atd()])
+        rows.append([])
+        rows.append([])
+
+        with open(self.output_filename, "a+", newline='') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',', quotechar='|')
+            writer.writerows(rows)
         return

@@ -45,7 +45,10 @@ class GadStats:
         return self.atd
 
     def get_atd(self) -> float:
-        return self.atd / self.gtd
+        if self.gtd is not 0.0:
+            return self.atd / self.gtd
+        else:
+            return self.gtd
 
     def __repr__(self) -> str:
         return f'GAD Stats(GAD {self.get_atd()})'
@@ -123,7 +126,7 @@ class MetricsProcessor:
     def run(self):
         self.trips = process_trip_info(f"{self.prefix}/tripinfo_{self.id}.xml")
         self.gad = process_edge_info(f"{self.prefix}/edges_{self.id}.xml")
-        self.tlp = process_trip_info(f"{self.prefix}/detectors_{self.id}.xml")
+        self.tlp = process_tlp_uses(f"{self.prefix}/detectors_{self.id}.xml")
 
     def get_trip_info(self):
         return self.trips
